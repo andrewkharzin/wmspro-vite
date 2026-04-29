@@ -1,0 +1,62 @@
+/* src/index.css - упрощенная версия */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Предотвращение layout shift */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Скелетон для загрузки */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Базовые стили для body */
+body {
+  background-color: #fdfdff;
+  color: #0f172a;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Фиксированные размеры для предотвращения CLS */
+.sidebar-fixed {
+  width: 256px;
+  flex-shrink: 0;
+  transition: width 0.3s ease;
+}
+
+.sidebar-fixed.collapsed {
+  width: 80px;
+}

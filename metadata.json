@@ -1,0 +1,9 @@
+{
+  "name": "NexusAI WMS Pro",
+  "description": "Premium industrial Warehouse Management System & SPA Marketplace powered by Gemini AI. Optimized for high-throughput logistics and enterprise supply chains.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
