@@ -7,8 +7,8 @@ class BrowserSupabaseClient {
 
   static getInstance() {
     if (!this.instance) {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
       if (!supabaseUrl || !supabaseAnonKey) {
         throw new Error('Missing Supabase environment variables')
@@ -16,8 +16,6 @@ class BrowserSupabaseClient {
 
       // Очищаем URL от /rest/v1/ если есть
       const cleanUrl = supabaseUrl.replace(/\/rest\/v1\/?$/, '')
-
-      console.log('Creating Supabase client with URL:', cleanUrl)
 
       this.instance = createClient<Database>(cleanUrl, supabaseAnonKey, {
         db: {

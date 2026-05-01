@@ -2,38 +2,55 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/clients/server.client'
 import { ItemInsert, ItemUpdate } from '../types'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
+import { cacheTags } from '@/lib/cache/tags'
 
 export async function getItems(filters?: any) {
-  const supabase = await createServerSupabaseClient()
-  let query = supabase.from('core.items').select('*, categories(*)')
+  const filtersKey = JSON.stringify(filters || {})
+  const cachedQuery = unstable_cache(
+    async () => {
+      const supabase = await createServerSupabaseClient()
+      let query = supabase.from('core.items').select('*, categories(*)')
 
-  if (filters?.status) {
-    query = query.eq('status', filters.status)
-  }
-  if (filters?.categoryId) {
-    query = query.eq('category_id', filters.categoryId)
-  }
-  if (filters?.search) {
-    query = query.ilike('title', `%${filters.search}%`)
-  }
+      if (filters?.status) {
+        query = query.eq('status', filters.status)
+      }
+      if (filters?.categoryId) {
+        query = query.eq('category_id', filters.categoryId)
+      }
+      if (filters?.search) {
+        query = query.ilike('title', `%${filters.search}%`)
+      }
 
-  const { data, error } = await query.order('created_at', { ascending: false })
+      const { data, error } = await query.order('created_at', { ascending: false })
+      if (error) throw new Error(error.message)
+      return data
+    },
+    ['items', filtersKey],
+    { revalidate: 120, tags: [cacheTags.inventoryList] }
+  )
 
-  if (error) throw new Error(error.message)
-  return data
+  return cachedQuery()
 }
 
 export async function getItem(id: string) {
-  const supabase = await createServerSupabaseClient()
-  const { data, error } = await supabase
-    .from('core.items')
-    .select('*, categories(*), seller:profiles!seller_id(*)')
-    .eq('id', id)
-    .single()
+  const cachedQuery = unstable_cache(
+    async () => {
+      const supabase = await createServerSupabaseClient()
+      const { data, error } = await supabase
+        .from('core.items')
+        .select('*, categories(*), seller:profiles!seller_id(*)')
+        .eq('id', id)
+        .single()
 
-  if (error) throw new Error(error.message)
-  return data
+      if (error) throw new Error(error.message)
+      return data
+    },
+    ['items', id],
+    { revalidate: 180, tags: [cacheTags.inventoryList, cacheTags.inventoryItem(id)] }
+  )
+
+  return cachedQuery()
 }
 
 export async function createItem(item: ItemInsert) {
@@ -46,8 +63,9 @@ export async function createItem(item: ItemInsert) {
 
   if (error) throw new Error(error.message)
 
-  revalidatePath('/items')
-  revalidatePath(`/items/${data.id}`)
+  revalidateTag(cacheTags.inventoryList)
+  revalidateTag(cacheTags.inventoryItem(data.id))
+  revalidatePath('/inventory')
   return data
 }
 
@@ -62,8 +80,9 @@ export async function updateItem(id: string, updates: ItemUpdate) {
 
   if (error) throw new Error(error.message)
 
-  revalidatePath('/items')
-  revalidatePath(`/items/${id}`)
+  revalidateTag(cacheTags.inventoryList)
+  revalidateTag(cacheTags.inventoryItem(id))
+  revalidatePath('/inventory')
   return data
 }
 
@@ -76,7 +95,9 @@ export async function deleteItem(id: string) {
 
   if (error) throw new Error(error.message)
 
-  revalidatePath('/items')
+  revalidateTag(cacheTags.inventoryList)
+  revalidateTag(cacheTags.inventoryItem(id))
+  revalidatePath('/inventory')
 }
 
 export async function toggleFeature(id: string, isFeatured: boolean) {
@@ -88,5 +109,7 @@ export async function toggleFeature(id: string, isFeatured: boolean) {
 
   if (error) throw new Error(error.message)
 
-  revalidatePath('/items')
+  revalidateTag(cacheTags.inventoryList)
+  revalidateTag(cacheTags.inventoryItem(id))
+  revalidatePath('/inventory')
 }

@@ -1,4 +1,5 @@
 // lib/supabase/clients/server.client.ts
+import 'server-only'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase/core.types'
