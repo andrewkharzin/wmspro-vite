@@ -30,6 +30,9 @@
       ],
       "@/hooks/*": [
         "./hooks/*"
+      ],
+      "@/components/*": [
+        "./components/*"
       ]
     },
     "allowImportingTsExtensions": true,
